@@ -1,7 +1,7 @@
 import boto3
 
 BUCKET = "rekognition-demo-sela"
-KEY = "../HIMYM.jpg"
+KEY = "HIMYM.jpg"
 
 
 def upload_image():
@@ -27,7 +27,7 @@ def detect_labels(bucket, key, max_labels=10, min_confidence=90, region="eu-west
 
 def main():
 	upload_image()
-	for label in detect_labels(BUCKET, f"images/{KEY}"):
+	for label in detect_labels(BUCKET, f"images/{KEY}", min_confidence=90):
 		print("{Name} - {Confidence}%".format(**label))
 		# detect_labels(BUCKET, f"images/{KEY}", max_labels=10, min_confidence=90, region="eu-west-1")
 
