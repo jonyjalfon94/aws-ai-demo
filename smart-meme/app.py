@@ -11,16 +11,18 @@ from bs4 import BeautifulSoup
 
 
 # Define variables
-BUCKET = "rekognition-demo-sela"
-REGION = "eu-west-1"
+
+# Get bucket name from environment variable or set to default value
+BUCKET = os.environ.get('BUCKET', 'rekognition-demo-sela')
+REGION = os.environ.get('REGION', 'eu-west-1')
 
 # Initialize clients
-db = boto3.resource('dynamodb')
-s3 = boto3.resource('s3')
-comprehend = boto3.client('comprehend')
-rekognition = boto3.client("rekognition")
-translate = boto3.client('translate')
-polly = boto3.client('polly')
+db = boto3.resource('dynamodb', region_name=REGION)
+s3 = boto3.resource('s3', region_name=REGION)
+comprehend = boto3.client('comprehend', region_name=REGION)
+rekognition = boto3.client("rekognition", region_name=REGION)
+translate = boto3.client('translate', region_name=REGION)
+polly = boto3.client('polly', region_name=REGION)
 
 # Initialize app
 app = Flask(__name__)
@@ -39,7 +41,7 @@ def homepage():
 @app.route("/upload_photo", methods=["GET", "POST"])
 def upload_photo():
     photo = request.files["file"]
-    s3.Bucket(BUCKET).upload_fileobj(photo, photo.filename, ExtraArgs={'ACL':'public-read'})
+    s3.Bucket(BUCKET).upload_fileobj(photo, photo.filename, ExtraArgs={'ACL':'public-read', 'CacheControl' : 'max-age=0'})
     table = db.Table('Memes')
     response = table.put_item(
         Item={
@@ -66,10 +68,9 @@ def process():
         caption = "Put a caption next time you press me" if len(request.form['caption']) == 0 else request.form['caption']
         memefy(file_name, caption)
         return redirect("/")
-    elif request.form['action'] == 'Vision API Caption':
+    elif request.form['action'] == 'Rekognition Generated Caption':
         generate_image_caption(file_name)
         return redirect("/")
-    # Return an error if the image selected has no caption
     if meme["caption"] == "":
         table = db.Table('Memes')
         image_entities = table.scan()['Items']
@@ -77,7 +78,7 @@ def process():
     if request.form['action'] == 'Translate':
         translate_target_lang = request.form['language']
         translate_text(file_name, translate_target_lang)
-    elif request.form['action'] == 'Text-to-Speech':
+    elif request.form['action'] == 'Polly Get Audio':
         text_to_mp3(file_name)
 
     # # Redirect to the home page.
@@ -147,7 +148,7 @@ def memefy(file_name, caption):
   img.save('captioned_image.jpg', optimize=True, quality=80)
 
   # Upload meme to bucket
-  s3.Bucket(BUCKET).upload_file("captioned_image.jpg", f"processed/{file_name}", ExtraArgs={'ACL':'public-read'})
+  s3.Bucket(BUCKET).upload_file("captioned_image.jpg", f"processed/{file_name}", ExtraArgs={'ACL':'public-read', 'CacheControl' : 'max-age=0'})
 
   # Update image metadata
   table = db.Table('Memes')
@@ -201,6 +202,7 @@ def get_voice(caption_language):
     else:
         voice = "Kimberly"
     return voice
+
 # Converts text to an mp3 file using Text to Speech API
 def text_to_mp3(file_name):
     # Get the image caption from its Datastore entity
@@ -212,7 +214,7 @@ def text_to_mp3(file_name):
         Text = meme["caption"], OutputFormat = "mp3", VoiceId = get_voice(meme["caption_language"])
     )
     print(output['AudioStream'])
-    s3.Bucket(BUCKET).upload_fileobj(output['AudioStream'], f"audio/{file_name}", ExtraArgs={'ACL':'public-read'})
+    s3.Bucket(BUCKET).upload_fileobj(output['AudioStream'], f"audio/{file_name}", ExtraArgs={'ACL':'public-read', 'CacheControl' : 'max-age=0'})
     table = db.Table('Memes')
     table.update_item(
         Key={
