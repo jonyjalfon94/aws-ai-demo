@@ -1,18 +1,14 @@
 import logging, os, random
-from turtle import home
-
 import boto3
 from flask import Flask, redirect, render_template, request
 # from PIL import Image, ImageDraw, ImageFont
-from memefy import Meme
+from src.memefy import Meme
 import requests
 from requests.structures import CaseInsensitiveDict
 from bs4 import BeautifulSoup
 
 
 # Define variables
-
-# Get bucket name from environment variable or set to default value
 BUCKET = os.environ.get('BUCKET', 'rekognition-demo-sela')
 REGION = os.environ.get('REGION', 'eu-west-1')
 
@@ -25,7 +21,7 @@ translate = boto3.client('translate', region_name=REGION)
 polly = boto3.client('polly', region_name=REGION)
 
 # Initialize app
-app = Flask(__name__)
+app = Flask(__name__, template_folder='src/templates')
 
 # Render HTML template
 @app.route("/")
@@ -113,25 +109,19 @@ def generate_image_caption(file_name):
 		MinConfidence=90,
 	)
     labels = response["Labels"]
+    label_list = "%20".join([label["Name"] for label in labels])
     quotes = []
-    for i in range(3):
-        for label in labels:
-            #Get quotes from the brainyquote.com for each label
-            quotes.extend(getQuotes(label["Name"]))
-        if  len(quotes) > 0:
-            break
-        if i == 2 and len(quotes) == 0:
-            print(i)
-            for label in labels:
-                #Get quotes from icanhazdadjoke.com instead
-                label_name = label["Name"]
-                headers = CaseInsensitiveDict()
-                headers["Accept"] = "application/json"
-                jokes = requests.get(f"https://icanhazdadjoke.com/search?term={label_name}", headers=headers).json()["results"]
-                for joke in jokes:
-                    if len(joke["joke"]) < 80:
-                        print(joke["joke"])
-                        quotes.append(joke["joke"])
+    for label in labels:
+        quotes.extend(getQuotes(label["Name"]))
+    headers = CaseInsensitiveDict()
+    headers["Accept"] = "application/json"
+    print(f"https://icanhazdadjoke.com/search?term={label_list}")
+    jokes = requests.get(f"https://icanhazdadjoke.com/search?term={label_list}", headers=headers).json()["results"]
+    for joke in jokes:
+        if len(joke["joke"]) < 80:
+            print(joke["joke"])
+            quotes.append(joke["joke"])
+    # print(quotes)
     memefy(file_name, random.choice(quotes))
 
 # Uses PIL to write a caption on top of the image

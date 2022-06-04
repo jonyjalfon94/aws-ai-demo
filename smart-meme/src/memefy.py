@@ -10,8 +10,8 @@ class Meme:
     stroke_fill = (0,0,0)             #outlineColor
     lineSpacing = 10            #Space between lines
     stroke_width=9              #How thick the outline of the text is
-    fontfile = './impact.ttf'
-    hebrew_fonfile ="./VarelaRound-Regular.ttf"
+    fontfile = './src/static/impact.ttf'
+    hebrew_fonfile ="./src/static/VarelaRound-Regular.ttf"
 
     def __init__(self, caption, image, language):
 
