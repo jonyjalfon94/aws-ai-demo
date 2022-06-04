@@ -5,3 +5,6 @@ clean_images:
 
 clean_all: clean_images
 	rm -rf ${APP_DIR}/__pycache__ ${APP_DIR}/.venv
+
+clean_cache: 
+	rm -rf ${APP_DIR}/__pycache__
