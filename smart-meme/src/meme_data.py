@@ -10,7 +10,7 @@ class MemeData:
         extra_args={'ACL':'public-read', 'CacheControl' : 'max-age=0'}
         self.s3.Bucket(bucket).upload_fileobj(file_data, file_name, ExtraArgs=extra_args)
         table = self.db.Table('Memes')
-        response = table.put_item(
+        table.put_item(
             Item={
                 'Name': file_name,
                 'processed': False,
@@ -46,30 +46,34 @@ class MemeData:
             ReturnValues="UPDATED_NEW"
         )
 
-    def update_meme_caption(self, meme_file_name, original_file_name, caption, caption_language, label, bucket, region) -> None:
+    def update_meme_caption(self, meme_file_name, original_file_name, caption, caption_language, label, sentiment, bucket, region) -> None:
         # Upload meme to bucket
-        self.s3.Bucket(bucket).upload_file(meme_file_name, f"processed/{original_file_name}", ExtraArgs={'ACL':'public-read', 'CacheControl' : 'max-age=0'})
+        extra_args={'ACL':'public-read', 'CacheControl' : 'max-age=0'}
+        self.s3.Bucket(bucket).upload_file(meme_file_name, f"processed/{original_file_name}", ExtraArgs=extra_args)
 
         # Update image metadata in DynamoDB
         table = self.db.Table('Memes')
+        update_expression='SET #proc = :proc, caption = :caption, #procimg = :procimg, #captionlang = :captionlang, #label = :label, #sentiment = :sentiment'
         table.update_item(
             Key={
                 'Name': original_file_name
             },
-            UpdateExpression='SET #proc = :proc, caption = :caption, #procimg = :procimg, #captionlang = :captionlang, #label = :label',
+            UpdateExpression=update_expression,
             ExpressionAttributeValues={
                 ':proc': True,
                 ':caption': caption,
                 ':captionlang' : caption_language,
                 ':procimg': f"https://{bucket}.s3.{region}.amazonaws.com/processed/{original_file_name}",
                 ':label': label,
+                ':sentiment' : sentiment
                 
             },
             ExpressionAttributeNames={
               "#proc": "processed",
               "#procimg" : "processed_image_public_url",
               '#captionlang' : "caption_language",
-              '#label' : "selected_label"
+              '#label' : "selected_label",
+              '#sentiment' : "caption_sentiment"
             },
             ReturnValues="UPDATED_NEW"
         )

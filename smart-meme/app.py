@@ -42,6 +42,7 @@ def upload_photo():
 # Image form button handler
 @app.route("/process", methods=["GET", "POST"])
 def process():
+
     file_name = request.form['Name']
     table = db.Table('Memes')
     meme = table.get_item(Key={"Name": file_name})["Item"]
@@ -53,7 +54,7 @@ def process():
         return redirect("/")
     
     # Generate image caption
-    elif request.form['action'] == 'Rekognition Generated Caption':
+    elif request.form['action'] == 'Rekognition Caption':
         generate_image_caption(file_name)
         return redirect("/")
 
@@ -68,7 +69,7 @@ def process():
         translate_text(file_name, translate_target_lang)
     
     # Generate audio from the image caption
-    elif request.form['action'] == 'Polly Get Audio':
+    elif request.form['action'] == 'Polly Audio':
         text_to_mp3(file_name)
 
     # # Redirect to the home page.
@@ -103,6 +104,7 @@ def generate_image_caption(file_name):
 
 # Get quotes from brainyquote.com by web scraping with BeautifulSoup for a given keyword
 def getQuotes(keyword):
+
     quoteArray = []
     base_url = "https://www.brainyquote.com/quotes/keywords/"
     url = base_url + keyword + ".html"
@@ -114,16 +116,18 @@ def getQuotes(keyword):
         if len(quote) < 80:
             quoteArray.append(quote)
     return quoteArray
-    
+
 # Uses PIL to write a caption on top of the image
 def memefy(file_name, caption, label=""):
 
-    # Download file
+    # Download original image
     s3.Bucket(BUCKET).download_file(file_name, 'original.jpg')
 
     # Detect caption language using Comprehend
     language = comprehend.detect_dominant_language(Text=caption)["Languages"][0]["LanguageCode"]
-
+    # Get caption sentiment using Comprehend
+    sentiment = comprehend.detect_sentiment(Text=caption, LanguageCode=language)["Sentiment"]
+    caption_sentiment = "Sentiment: " + sentiment.capitalize()
     # Generate meme
     meme = Meme(caption, 'original.jpg', "en")
     img = meme.draw()
@@ -134,7 +138,7 @@ def memefy(file_name, caption, label=""):
     img.save('captioned_image.jpg', optimize=True, quality=80)
 
     # Upload meme to bucket and save its metadata in DynamoDB
-    meme_data.update_meme_caption("captioned_image.jpg", file_name, caption, language, label, BUCKET, REGION)
+    meme_data.update_meme_caption("captioned_image.jpg", file_name, caption, language, label, caption_sentiment, BUCKET, REGION)
 
 # Translates text into the target language using AWS Translate
 def translate_text(file_name, target_lang):

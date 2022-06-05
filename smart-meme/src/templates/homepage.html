@@ -119,14 +119,17 @@
                     </div>
                     <div class="form-group">
                       <div class="input-group">
-                        <input type="submit" class="btn m-1" name="action" name="text_to_speech" value="Polly Get Audio">
-                        <input type="submit" class="btn  m-1" name="action" name="vision" value="Rekognition Generated Caption">
+                        <input type="submit" class="btn m-1" name="action" name="text_to_speech" value="Polly Audio">
+                        <input type="submit" class="btn  m-1" name="action" name="vision" value="Rekognition Caption">
                       </div>
                     </div>
                 </div>
                 </form>
                 {% if meme['selected_label'] %}
                 <p>{{meme['selected_label']}}</p>
+                {% endif %}
+                {% if meme['caption_sentiment'] %}
+                <p>{{meme['caption_sentiment']}}</p>
                 {% endif %}
                 <br>
               </div>
