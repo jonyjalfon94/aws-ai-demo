@@ -75,7 +75,7 @@ def process():
     # # Redirect to the home page.
     return redirect("/")
 
-# Generate image caption using Google Vision API for collecting labels and taking a quote from brainyquote.com
+# Generate image caption using AWS Rekognition for collecting labels and taking a quote from brainyquote.com or icanhazdadjoke.com
 def generate_image_caption(file_name):
 
     # Download original image
@@ -202,6 +202,5 @@ def server_error(e):
     )
 
 if __name__ == "__main__":
-    # This is used when running locally. Gunicorn is used to run the
-    # application on Google App Engine. See entrypoint in app.yaml.
+    # This is used when running locally.
     app.run(host="127.0.0.1", port=8080, debug=True)
