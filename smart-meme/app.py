@@ -143,7 +143,7 @@ def memefy(file_name, caption, label=""):
 # Translates text into the target language using AWS Translate
 def translate_text(file_name, target_lang):
 
-    # Get datastore entity for image
+    # Get image metadata from DynamoDB
     table = db.Table('Memes')
     meme = table.get_item(Key={"Name": file_name})["Item"]
 
