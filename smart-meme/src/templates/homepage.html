@@ -23,14 +23,10 @@
       <div class="col-md-12">
         <h1 class="display-4">AWS - AI Demo</h1>
         <p class="lead">This is a simple web application that uploads a picture to S3 and demonstrates some
-          of the capabilities
-          of AWS Rekognition, Amazon Translate and Amazon Polly </p>
+          of the capabilities of Rekognition, Translate, Polly and Comprehend </p>
         <hr class="my-4">
       </div>
     </div>
-    <!-- <h1>Google Cloud Platform - Face Detection Sample</h1>
-  <p>This Python Flask application demonstrates App Engine Flexible, Google Cloud
-    Storage, Datastore, and the Cloud Vision API.</p> -->
     <div class="container">
 
       <form action="upload_photo" method="POST" enctype="multipart/form-data">
@@ -38,13 +34,10 @@
           <input required="true" type="file" name="file" class="custom-file-input" id="customFile">
           <label class="custom-file-label" for="customFile">Choose file</label>
         </div>
-        <!-- Upload File: <input type="file" name="file"> -->
         <br>
         <br>
         <div class="row justify-content-center">
           <input type="submit" name="action" class="btn m-1" value="Submit">
-          <!-- <input type="submit" name="action" class="btn m-1" value="Meme">
-          <input type="submit" name="action" class="btn m-1" value="Translate"> -->
         </div>
       </form>
       {% if form_error %}
@@ -89,7 +82,6 @@
                 {% endif %}
               </div>
               <div class="carousel-caption d-none d-md-block" style="position: relative; left: 0; top: 0;">
-                <!-- <h5>...</h5> -->
                 <div>
                   <form action="process" class="d-flex justify-content-center" method="POST"
                     enctype="multipart/form-data">
@@ -107,9 +99,8 @@
                         <div class="input-group-append">
                           <select id="language" class="form-control mt-1" name="language">
                             <option value="en">English</option>
-                            <!-- <option value="he">Hebrew</option> -->
                             <option value="es">Spanish</option>
-                            <option value="ru">Russian</option>
+                            <option value="pt">Portuguese</option>
                             <option value="fr">French</option>
                             <option value="it">Italian</option>
                           </select>
@@ -134,7 +125,6 @@
                 <br>
               </div>
             </div>
-            <!-- <p>{{meme['blob_name']}} was uploaded {{meme['timestamp']}}.</p> -->
             {% endfor %}
           </div>
           <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
@@ -148,7 +138,6 @@
         </div>
       </div>
       <script>
-        // Add the following code if you want the name of the file appear on select
         $(".custom-file-input").on("change", function () {
           var fileName = $(this).val().split("\\").pop();
           $(this).siblings(".custom-file-label").addClass("selected").html(fileName);

@@ -165,8 +165,8 @@ def translate_text(file_name, target_lang):
 def get_voice(caption_language):
     if caption_language == "fr":
         voice = "Celine"
-    elif caption_language == "ru":
-        voice = "Maxim"
+    elif caption_language == "pt":
+        voice = "Camila"
     elif caption_language == "es":
         voice = "Conchita"
     elif caption_language == "it":
